@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthRoutes } from '../modules/auth/auth.routes';
 import { TeamRoutes } from '../modules/team/team.routes';
 import { ProjectRoutes } from '../modules/project/project.routes';
+import { TaskRoutes } from '../modules/task/task.routes';
 
 const router = Router();
 
@@ -18,6 +19,10 @@ const moduleRoutes = [
     {
         path: '/projects',
         route: ProjectRoutes,
+    },
+    {
+        path: '/tasks',
+        route: TaskRoutes,
     },
 ];
 
