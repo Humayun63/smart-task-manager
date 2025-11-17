@@ -80,3 +80,25 @@ export const loginUser = async (req: Request, res: Response) => {
         throw error;
     }
 };
+
+/**
+ * Since 1.0.0
+ * Logout user
+ * Clears the authentication cookie
+ */
+export const logoutUser = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+
+        res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'Logged out successfully',
+        });
+    } catch (error) {
+        throw error;
+    }
+};
