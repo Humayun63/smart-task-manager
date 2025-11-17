@@ -6,6 +6,7 @@ interface JWTPayload {
 }
 
 export const generateToken = (payload: JWTPayload): string => {
+    // @ts-ignore
     return jwt.sign(payload, envVars.JWT_SECRET, {
         expiresIn: envVars.JWT_EXPIRES_IN,
     });
