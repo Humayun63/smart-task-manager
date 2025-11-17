@@ -4,6 +4,7 @@ import { User } from './auth.model';
 import { registerSchema, loginSchema } from './auth.validation';
 import { generateToken } from '../../utils/jwt';
 import AppError from '../../errorHelpers/AppError';
+import { setTokenCookie } from '../../utils/setCookie';
 
 /**
  * Since 1.0.0
@@ -23,11 +24,12 @@ export const registerUser = async (req: Request, res: Response) => {
         const user = await User.create(validatedData);
         const token = generateToken({ id: user._id.toString() });
 
+        setTokenCookie(res, token);
+
         res.status(StatusCodes.CREATED).json({
             success: true,
             message: 'User registered successfully',
             data: {
-                token,
                 user: {
                     id: user._id,
                     name: user.name,
@@ -61,11 +63,12 @@ export const loginUser = async (req: Request, res: Response) => {
 
         const token = generateToken({ id: user._id.toString() });
 
+        setTokenCookie(res, token);
+
         res.status(StatusCodes.OK).json({
             success: true,
             message: 'Login successful',
             data: {
-                token,
                 user: {
                     id: user._id,
                     name: user.name,
