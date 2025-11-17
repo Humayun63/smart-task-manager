@@ -1,5 +1,5 @@
 {
-  "name": "Smart Task Manager",
+  "name": "smart-task-manager-server",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
