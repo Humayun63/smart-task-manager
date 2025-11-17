@@ -19,7 +19,7 @@ const teamMemberSchema = new Schema<ITeamMember>(
             min: [0, 'Capacity cannot be negative'],
         },
     },
-    { _id: false }
+    { _id: true }
 );
 
 const teamSchema = new Schema<ITeam>(
