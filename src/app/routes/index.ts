@@ -3,6 +3,7 @@ import { AuthRoutes } from '../modules/auth/auth.routes';
 import { TeamRoutes } from '../modules/team/team.routes';
 import { ProjectRoutes } from '../modules/project/project.routes';
 import { TaskRoutes } from '../modules/task/task.routes';
+import { ActivityLogRoutes } from '../modules/activityLog/activityLog.routes';
 
 const router = Router();
 
@@ -23,6 +24,10 @@ const moduleRoutes = [
     {
         path: '/tasks',
         route: TaskRoutes,
+    },
+    {
+        path: '/activity-log',
+        route: ActivityLogRoutes,
     },
 ];
 
