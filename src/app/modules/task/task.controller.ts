@@ -21,7 +21,7 @@ export const createTask = async (req: Request, res: Response) => {
         project, 
         assignedMember 
     } = req.body;
-    
+
     const userId = req.user?._id;
 
     if (!userId) {
@@ -417,5 +417,112 @@ export const deleteTask = async (req: Request, res: Response) => {
         success: true,
         message: 'Task deleted successfully',
         data: null,
+    });
+};
+
+/**
+ * Since 1.0.0
+ * Get all tasks within a project (regardless of owner)
+ * GET /projects/:projectId/tasks?member=xxx&priority=xxx&status=xxx
+ */
+export const getProjectTasks = async (req: Request, res: Response) => {
+    const { projectId } = req.params;
+    const userId = req.user?._id;
+
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, 'User not authenticated');
+    }
+
+    // Verify project exists and user has access to it
+    const project = await Project.findById(projectId);
+    if (!project) {
+        throw new AppError(StatusCodes.NOT_FOUND, 'Project not found');
+    }
+
+    // Check if user is the project owner
+    if (project.owner.toString() !== userId.toString()) {
+        throw new AppError(StatusCodes.FORBIDDEN, 'You can only view tasks from your own projects');
+    }
+
+    // Build filter query - filter by project, ignore owner
+    const filter: any = { project: projectId };
+
+    // Filter by assigned member
+    if (req.query.member) {
+        filter.assignedMember = req.query.member;
+    }
+
+    // Filter by priority
+    if (req.query.priority) {
+        if (!Object.values(TaskPriority).includes(req.query.priority as TaskPriority)) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid priority filter');
+        }
+        filter.priority = req.query.priority;
+    }
+
+    // Filter by status
+    if (req.query.status) {
+        if (!Object.values(TaskStatus).includes(req.query.status as TaskStatus)) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid status filter');
+        }
+        filter.status = req.query.status;
+    }
+
+    const tasks = await Task.find(filter)
+        .populate('project', 'name')
+        .populate('team', 'name')
+        .populate('owner', 'name email')
+        .sort({ createdAt: -1 });
+
+    // Manually populate assignedMember details from team
+    const tasksWithMembers = await Promise.all(
+        tasks.map(async (task) => {
+            let assignedMemberDetails = null;
+            if (task.assignedMember) {
+                const team = await Team.findById(task.team);
+                if (team) {
+                    const member = team.members.id(task.assignedMember);
+                    if (member) {
+                        assignedMemberDetails = {
+                            id: member._id,
+                            name: member.name,
+                            role: member.role,
+                            capacity: member.capacity,
+                        };
+                    }
+                }
+            }
+
+            return {
+                id: task._id,
+                title: task.title,
+                description: task.description,
+                priority: task.priority,
+                status: task.status,
+                project: task.project,
+                team: task.team,
+                assignedMember: assignedMemberDetails,
+                owner: task.owner,
+                createdAt: task.createdAt,
+                updatedAt: task.updatedAt,
+            };
+        })
+    );
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Project tasks retrieved successfully',
+        data: {
+            tasks: tasksWithMembers,
+            project: {
+                id: project._id,
+                name: project.name,
+            },
+            filters: {
+                member: req.query.member || null,
+                priority: req.query.priority || null,
+                status: req.query.status || null,
+            },
+        },
     });
 };
