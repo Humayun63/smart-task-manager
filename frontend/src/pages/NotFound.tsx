@@ -1,25 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { useNavigate } from 'react-router-dom';
+import { Button, Result } from 'antd';
 
 export const NotFound: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <Card className="max-w-md w-full">
-        <div className="text-center space-y-6">
-          <div className="text-6xl font-bold text-primary">404</div>
-          <h1 className="text-3xl font-bold text-text">Page Not Found</h1>
-          <p className="text-text-muted">
-            The page you're looking for doesn't exist or has been moved.
-          </p>
-          <Link to="/">
-            <Button variant="primary" size="large">
-              Go Back Home
-            </Button>
-          </Link>
-        </div>
-      </Card>
+    <div className="flex items-center justify-center min-h-screen bg-bg">
+      <Result
+        status="404"
+        title="404"
+        subTitle="Sorry, the page you visited does not exist."
+        extra={
+          <Button type="primary" size="large" onClick={() => navigate('/dashboard')}>
+            Back to Dashboard
+          </Button>
+        }
+      />
     </div>
   );
 };

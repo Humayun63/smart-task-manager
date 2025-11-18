@@ -1,6 +1,7 @@
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App as AntApp } from 'antd';
+import { RouterProvider } from 'react-router-dom';
 import { useTheme } from './context/ThemeContext';
-import { AppRouter } from './router';
+import { router } from './router';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -50,7 +51,9 @@ function App() {
         },
       }}
     >
-      <AppRouter />
+      <AntApp>
+        <RouterProvider router={router} />
+      </AntApp>
     </ConfigProvider>
   );
 }

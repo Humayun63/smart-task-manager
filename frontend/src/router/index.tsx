@@ -1,25 +1,74 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { MainLayout } from '../layouts/MainLayout';
-import { Home } from '../pages/Home';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { AppLayout } from '../layouts/AppLayout';
+import { PublicLayout } from '../layouts/PublicLayout';
+
+// Auth Pages
+import { Login } from '../pages/Login';
+import { Register } from '../pages/Register';
+
+// App Pages
+import { Dashboard } from '../pages/Dashboard';
+import { Teams } from '../pages/Teams';
+import { Projects } from '../pages/Projects';
+import { Tasks } from '../pages/Tasks';
+import { ActivityLog } from '../pages/ActivityLog';
 import { NotFound } from '../pages/NotFound';
 
 export const router = createBrowserRouter([
+  // Public routes
   {
-    path: '/',
-    element: <MainLayout />,
+    element: <PublicLayout />,
     children: [
       {
-        index: true,
-        element: <Home />,
+        path: '/login',
+        element: <Login />,
       },
       {
-        path: '*',
-        element: <NotFound />,
+        path: '/register',
+        element: <Register />,
       },
     ],
   },
-]);
+  
+  // Protected routes
+  {
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: '/',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: '/teams',
+        element: <Teams />,
+      },
+      {
+        path: '/projects',
+        element: <Projects />,
+      },
+      {
+        path: '/tasks',
+        element: <Tasks />,
+      },
+      {
+        path: '/activity-log',
+        element: <ActivityLog />,
+      },
+    ],
+  },
 
-export const AppRouter = () => {
-  return <RouterProvider router={router} />;
-};
+  // 404 route
+  {
+    path: '*',
+    element: <NotFound />,
+  },
+]);
