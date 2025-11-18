@@ -2,8 +2,15 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  team: string;
-  owner: string;
+  team: {
+    id: string;
+    name: string;
+  };
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

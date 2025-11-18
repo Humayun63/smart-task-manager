@@ -12,6 +12,7 @@ import { Dashboard } from '../pages/Dashboard';
 import { Teams } from '../pages/Teams';
 import { TeamDetail } from '../pages/TeamDetail';
 import { Projects } from '../pages/Projects';
+import { ProjectDetail } from '../pages/ProjectDetail';
 import { Tasks } from '../pages/Tasks';
 import { ActivityLog } from '../pages/ActivityLog';
 import { NotFound } from '../pages/NotFound';
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
       {
         path: '/projects',
         element: <Projects />,
+      },
+      {
+        path: '/projects/:projectId',
+        element: <ProjectDetail />,
       },
       {
         path: '/tasks',
