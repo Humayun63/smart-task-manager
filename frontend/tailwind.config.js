@@ -6,7 +6,22 @@ module.exports = {
         './src/**/*.{js,ts,jsx,tsx}',
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                primary: {
+                    DEFAULT: 'var(--color-primary)',
+                    hover: 'var(--color-primary-hover)',
+                },
+                bg: 'var(--color-bg)',
+                surface: 'var(--color-surface)',
+                text: {
+                    DEFAULT: 'var(--color-text)',
+                    muted: 'var(--color-text-muted)',
+                },
+                border: 'var(--color-border)',
+                divider: 'var(--color-divider)',
+            },
+        },
     },
     plugins: [
         require('tailwind-scrollbar'),

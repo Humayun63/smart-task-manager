@@ -1,0 +1,68 @@
+/* ==========================================
+   🎨 BRANDING & DESIGN TOKENS
+   ========================================== */
+
+/* Light Mode (Default) */
+:root {
+  /* Primary Colors */
+  --color-primary: #3DA8F5;
+  --color-primary-hover: #1F95E8;
+  
+  /* Background Colors */
+  --color-bg: #F3F7FB;
+  --color-surface: #FFFFFF;
+  
+  /* Text Colors */
+  --color-text: #1E2933;
+  --color-text-muted: #6B7A89;
+  
+  /* Semantic Colors */
+  --color-success: #52C41A;
+  --color-warning: #FAAD14;
+  --color-error: #F5222D;
+  --color-info: #1890FF;
+  
+  /* Borders & Dividers */
+  --color-border: #D9DFE6;
+  --color-divider: #E8ECF0;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+/* Dark Mode */
+.dark {
+  /* Primary Colors */
+  --color-primary: #63BDFD;
+  --color-primary-hover: #7FC9FD;
+  
+  /* Background Colors */
+  --color-bg: #12171D;
+  --color-surface: #1C222B;
+  
+  /* Text Colors */
+  --color-text: #E7EDF2;
+  --color-text-muted: #8B98A5;
+  
+  /* Semantic Colors */
+  --color-success: #73D13D;
+  --color-warning: #FFC53D;
+  --color-error: #FF4D4F;
+  --color-info: #40A9FF;
+  
+  /* Borders & Dividers */
+  --color-border: #2D3642;
+  --color-divider: #252C37;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
