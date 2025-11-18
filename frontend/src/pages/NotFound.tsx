@@ -6,7 +6,7 @@ export const NotFound: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-bg">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <Result
         status="404"
         title="404"

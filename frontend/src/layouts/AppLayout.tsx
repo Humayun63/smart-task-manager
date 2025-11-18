@@ -23,7 +23,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <Sidebar collapsed={collapsed} />
       <Layout>
         <Topbar collapsed={collapsed} onToggle={toggleSidebar} />
-        <Content className="bg-bg p-6 overflow-auto">
+        <Content className="bg-background p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
             {children || <Outlet />}
           </div>

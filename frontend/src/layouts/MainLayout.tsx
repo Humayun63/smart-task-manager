@@ -14,7 +14,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isDark = currentTheme === 'dark';
 
   return (
-    <div className="min-h-screen bg-bg transition-colors duration-300">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Navigation Bar */}
       <nav className="bg-surface border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -57,7 +57,7 @@ export const Home: React.FC = () => {
                 Active Theme: <span className="font-semibold text-primary capitalize">{currentTheme}</span>
               </p>
               <div className="flex items-center gap-2 pt-2">
-                <div className="w-8 h-8 rounded bg-bg border" title="Background" />
+                <div className="w-8 h-8 rounded bg-background border" title="Background" />
                 <div className="w-8 h-8 rounded bg-surface border" title="Surface" />
                 <div className="w-8 h-8 rounded bg-primary" title="Primary" />
                 <div className="w-8 h-8 rounded bg-text" title="Text" />

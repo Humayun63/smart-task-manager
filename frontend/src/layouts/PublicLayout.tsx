@@ -8,7 +8,7 @@ interface PublicLayoutProps {
 
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-background">
       {children || <Outlet />}
     </div>
   );

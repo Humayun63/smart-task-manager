@@ -14,7 +14,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-bg">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <Spin size="large" />
       </div>
     );

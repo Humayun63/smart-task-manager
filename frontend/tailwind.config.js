@@ -12,7 +12,7 @@ module.exports = {
                     DEFAULT: 'var(--color-primary)',
                     hover: 'var(--color-primary-hover)',
                 },
-                bg: 'var(--color-bg)',
+                background: 'var(--color-bg)',
                 surface: 'var(--color-surface)',
                 text: {
                     DEFAULT: 'var(--color-text)',
