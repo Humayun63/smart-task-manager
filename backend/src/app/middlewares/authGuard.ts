@@ -16,18 +16,24 @@ declare global {
 
 /**
  * Authentication Guard Middleware
- * Verifies JWT token and attaches user to request object
+ * Verifies JWT token from cookie and attaches user to request object
  */
 export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Get token from Authorization header
-        const authHeader = req.headers.authorization;
+        // Get token from cookie (primary method for this app)
+        let token = req.cookies?.token;
         
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // Fallback: Check Authorization header if cookie is not present
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.split(' ')[1];
+            }
+        }
+        
+        if (!token) {
             throw new AppError(StatusCodes.UNAUTHORIZED, 'No token provided');
         }
-
-        const token = authHeader.split(' ')[1];
 
         // Verify token
         let decoded;

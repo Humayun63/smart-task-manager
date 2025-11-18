@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     >
       <div className="h-16 flex items-center justify-center border-b border-divider">
         {!collapsed ? (
-          <h2 className="text-xl font-bold text-primary m-0">TaskManager</h2>
+          <h2 className="text-xl font-bold text-primary m-0">Task Manager</h2>
         ) : (
           <h2 className="text-xl font-bold text-primary m-0">TM</h2>
         )}

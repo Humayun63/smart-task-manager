@@ -22,7 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {/* Logo/Brand */}
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-primary">
-                TaskManager
+                TM
               </h1>
             </div>
 
