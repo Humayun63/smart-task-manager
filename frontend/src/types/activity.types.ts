@@ -1,5 +1,5 @@
 export interface ActivityLog {
-  _id: string;
+  id: string;
   taskId?: string;
   projectId?: string;
   teamId: string;

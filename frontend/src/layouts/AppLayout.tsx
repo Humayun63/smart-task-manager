@@ -19,7 +19,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="!min-h-screen">
       <Sidebar collapsed={collapsed} />
       <Layout>
         <Topbar collapsed={collapsed} onToggle={toggleSidebar} />

@@ -21,7 +21,7 @@ export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<DashboardData | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+    const [selectedMember, setSelectedMember] = useState<{ _id: string; name: string } | null>(null);
 
     const fetchDashboardData = async () => {
         try {
@@ -41,7 +41,7 @@ export const Dashboard: React.FC = () => {
     }, []);
 
     const handleReassignClick = (memberId: string, memberName: string) => {
-        setSelectedMember({ id: memberId, name: memberName });
+        setSelectedMember({ _id: memberId, name: memberName });
         setModalVisible(true);
     };
 
@@ -58,8 +58,8 @@ export const Dashboard: React.FC = () => {
 
             // Find the team containing both members
             const team = teams.find((t) =>
-                t.members.some((m) => m.id === selectedMember.id) &&
-                t.members.some((m) => m.id === toMemberId)
+                t.members.some((m) => m._id === selectedMember._id) &&
+                t.members.some((m) => m._id === toMemberId)
             );
 
             if (!team) {
@@ -69,14 +69,14 @@ export const Dashboard: React.FC = () => {
 
             // Reassign all tasks from the overloaded member to the selected member
             const result = await taskService.reassignTasks(
-                selectedMember.id,
+                selectedMember._id,
                 toMemberId,
                 team.id
             );
 
             // Create activity log
             const fromMemberName = selectedMember.name;
-            const toMember = team.members.find((m) => m.id === toMemberId);
+            const toMember = team.members.find((m) => m._id === toMemberId);
             const toMemberName = toMember?.name || 'Unknown';
 
             await activityService.createLog({

@@ -64,12 +64,12 @@ export const taskService = {
     const reassignedTasks: Task[] = [];
     for (const task of tasksToReassign) {
       try {
-        const updatedTaskResponse = await this.updateTask(task._id, {
+        const updatedTaskResponse = await this.updateTask(task.id, {
           assignedMember: toMemberId,
         });
         reassignedTasks.push(updatedTaskResponse.data.task);
       } catch (error) {
-        console.error(`Failed to reassign task ${task._id}:`, error);
+        console.error(`Failed to reassign task ${task.id}:`, error);
       }
     }
 

@@ -38,7 +38,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      await teamService.updateMember(teamId, member.id, values);
+      await teamService.updateMember(teamId, member._id, values);
       message.success('Member updated successfully');
       onSuccess();
       onClose();

@@ -19,7 +19,7 @@ export interface CreateTeamData {
 }
 
 export interface AddMembersData {
-  members: Omit<TeamMember, '_id'>[];
+  members: Omit<TeamMember, 'id'>[];
 }
 
 export interface UpdateTeamData {

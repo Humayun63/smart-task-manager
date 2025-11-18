@@ -6,7 +6,7 @@ import { teamService } from '../../services';
 interface CreateTeamModalProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (teamId: string) => void;
 }
 
 export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
@@ -21,11 +21,11 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      await teamService.createTeam(values);
+      const response = await teamService.createTeam(values);
       message.success('Team created successfully');
       form.resetFields();
-      onSuccess();
       onClose();
+      onSuccess(response.data.team.id);
     } catch (error: any) {
       if (error.errorFields) return; // Form validation error
       const errorMsg = error.response?.data?.message || 'Failed to create team';
