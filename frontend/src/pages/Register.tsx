@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import type { RegisterData } from '../types';
@@ -11,15 +11,20 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleSubmit = async (values: RegisterData & { confirmPassword: string }) => {
     setLoading(true);
+    setError('');
+    
     try {
       const { confirmPassword, ...registerData } = values;
       await register(registerData);
       navigate('/dashboard');
-    } catch (error) {
-      // Error is handled by AuthContext
+    } catch (err: any) {
+      // Display error below form
+      const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -35,6 +40,17 @@ export const Register: React.FC = () => {
           <Text className="text-text-muted">Sign up to get started</Text>
         </div>
 
+        {error && (
+          <Alert
+            message={error}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError('')}
+            className="mb-4"
+          />
+        )}
+
         <Form
           name="register"
           layout="vertical"
@@ -44,12 +60,16 @@ export const Register: React.FC = () => {
         >
           <Form.Item
             name="name"
-            rules={[{ required: true, message: 'Please enter your name' }]}
+            rules={[
+              { required: true, message: 'Please enter your name' },
+              { min: 2, message: 'Name must be at least 2 characters' },
+            ]}
           >
             <Input
               prefix={<UserOutlined className="text-text-muted" />}
               placeholder="Full Name"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -64,6 +84,7 @@ export const Register: React.FC = () => {
               prefix={<MailOutlined className="text-text-muted" />}
               placeholder="Email"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -78,6 +99,7 @@ export const Register: React.FC = () => {
               prefix={<LockOutlined className="text-text-muted" />}
               placeholder="Password"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -100,6 +122,7 @@ export const Register: React.FC = () => {
               prefix={<LockOutlined className="text-text-muted" />}
               placeholder="Confirm Password"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -112,7 +135,7 @@ export const Register: React.FC = () => {
               size="large"
               className="rounded-lg font-semibold"
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
           </Form.Item>
 

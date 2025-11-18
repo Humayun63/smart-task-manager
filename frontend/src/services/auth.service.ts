@@ -15,7 +15,6 @@ export const authService = {
   async logout(): Promise<void> {
     await api.post('/auth/logout');
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
   },
 
   getCurrentUser() {
@@ -23,15 +22,11 @@ export const authService = {
     return user ? JSON.parse(user) : null;
   },
 
-  getToken() {
-    return localStorage.getItem('token');
-  },
-
-  setToken(token: string) {
-    localStorage.setItem('token', token);
-  },
-
   setUser(user: any) {
     localStorage.setItem('user', JSON.stringify(user));
+  },
+
+  clearUser() {
+    localStorage.removeItem('user');
   },
 };

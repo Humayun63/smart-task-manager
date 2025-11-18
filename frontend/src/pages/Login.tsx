@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import type { LoginCredentials } from '../types';
@@ -12,17 +12,22 @@ export const Login: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleSubmit = async (values: LoginCredentials) => {
     setLoading(true);
+    setError('');
+    
     try {
       await login(values);
       
       // Get redirect URL or default to dashboard
       const redirect = searchParams.get('redirect') || '/dashboard';
       navigate(redirect);
-    } catch (error) {
-      // Error is handled by AuthContext
+    } catch (err: any) {
+      // Display error below form
+      const errorMsg = err.response?.data?.message || err.message || 'Login failed. Please try again.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -37,6 +42,17 @@ export const Login: React.FC = () => {
           </Title>
           <Text className="text-text-muted">Sign in to your account to continue</Text>
         </div>
+
+        {error && (
+          <Alert
+            message={error}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError('')}
+            className="mb-4"
+          />
+        )}
 
         <Form
           name="login"
@@ -56,6 +72,7 @@ export const Login: React.FC = () => {
               prefix={<MailOutlined className="text-text-muted" />}
               placeholder="Email"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -67,6 +84,7 @@ export const Login: React.FC = () => {
               prefix={<LockOutlined className="text-text-muted" />}
               placeholder="Password"
               className="rounded-lg"
+              disabled={loading}
             />
           </Form.Item>
 
@@ -79,7 +97,7 @@ export const Login: React.FC = () => {
               size="large"
               className="rounded-lg font-semibold"
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </Button>
           </Form.Item>
 

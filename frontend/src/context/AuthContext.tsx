@@ -17,9 +17,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Restore auth state from localStorage on mount
     const currentUser = authService.getCurrentUser();
-    const token = authService.getToken();
     
-    if (currentUser && token) {
+    if (currentUser) {
       setUser(currentUser);
     }
     setLoading(false);
@@ -30,13 +29,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login(credentials);
       const userData = response.data.user;
       
-      // Store user and token
+      // Store user in localStorage (token is in HTTP-only cookie)
       authService.setUser(userData);
       setUser(userData);
       
-      message.success('Login successful!');
+      message.success(response.message || 'Login successful!');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+      // Extract error message from backend response
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed. Please try again.';
       message.error(errorMessage);
       throw error;
     }
@@ -47,13 +47,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.register(data);
       const userData = response.data.user;
       
-      // Store user
+      // Store user in localStorage (token is in HTTP-only cookie)
       authService.setUser(userData);
       setUser(userData);
       
-      message.success('Registration successful!');
+      message.success(response.message || 'Registration successful!');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      // Extract error message from backend response
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
       message.error(errorMessage);
       throw error;
     }
@@ -66,8 +67,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       message.success('Logged out successfully');
     } catch (error: any) {
       // Even if API call fails, clear local state
+      authService.clearUser();
       setUser(null);
-      authService.logout();
       message.info('Logged out');
     }
   };
