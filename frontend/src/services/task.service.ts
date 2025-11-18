@@ -50,4 +50,33 @@ export const taskService = {
     const response = await api.delete<ApiResponse>(`/tasks/${taskId}`);
     return response.data;
   },
+
+  async reassignTasks(fromMemberId: string, toMemberId: string, teamId: string): Promise<{
+    success: boolean;
+    reassignedCount: number;
+    tasks: Task[];
+  }> {
+    // Get all tasks assigned to fromMember in this team
+    const tasksResponse = await this.getTasks({ member: fromMemberId });
+    const tasksToReassign = tasksResponse.data.tasks.filter((task) => task.team === teamId);
+
+    // Reassign each task
+    const reassignedTasks: Task[] = [];
+    for (const task of tasksToReassign) {
+      try {
+        const updatedTaskResponse = await this.updateTask(task._id, {
+          assignedMember: toMemberId,
+        });
+        reassignedTasks.push(updatedTaskResponse.data.task);
+      } catch (error) {
+        console.error(`Failed to reassign task ${task._id}:`, error);
+      }
+    }
+
+    return {
+      success: true,
+      reassignedCount: reassignedTasks.length,
+      tasks: reassignedTasks,
+    };
+  },
 };

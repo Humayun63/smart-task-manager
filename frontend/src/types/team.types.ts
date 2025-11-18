@@ -6,7 +6,7 @@ export interface TeamMember {
 }
 
 export interface Team {
-  _id: string;
+  id: string;
   name: string;
   owner: string;
   members: TeamMember[];

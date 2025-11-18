@@ -46,14 +46,52 @@ export const Dashboard: React.FC = () => {
     };
 
     const handleReassignConfirm = async (toMemberId: string) => {
-        // TODO: Implement actual reassignment API call
-        console.log('Reassigning from', selectedMember?.id, 'to', toMemberId);
+        if (!selectedMember) return;
 
-        // Simulated API call - replace with actual service call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+            // Import services
+            const { taskService, activityService, teamService } = await import('../services');
 
-        // Refresh dashboard data after reassignment
-        await fetchDashboardData();
+            // Get all teams to find which team this member belongs to
+            const teamsResponse = await teamService.getTeams();
+            const teams = teamsResponse.data.teams;
+
+            // Find the team containing both members
+            const team = teams.find((t) =>
+                t.members.some((m) => m.id === selectedMember.id) &&
+                t.members.some((m) => m.id === toMemberId)
+            );
+
+            if (!team) {
+                message.error('Could not find team for these members');
+                return;
+            }
+
+            // Reassign all tasks from the overloaded member to the selected member
+            const result = await taskService.reassignTasks(
+                selectedMember.id,
+                toMemberId,
+                team.id
+            );
+
+            // Create activity log
+            const fromMemberName = selectedMember.name;
+            const toMember = team.members.find((m) => m.id === toMemberId);
+            const toMemberName = toMember?.name || 'Unknown';
+
+            await activityService.createLog({
+                teamId: team.id,
+                message: `${result.reassignedCount} task(s) reassigned from ${fromMemberName} to ${toMemberName}`,
+            });
+
+            message.success(`Successfully reassigned ${result.reassignedCount} task(s)`);
+
+            // Refresh dashboard data
+            await fetchDashboardData();
+        } catch (error: any) {
+            message.error('Failed to reassign tasks');
+            console.error('Reassignment error:', error);
+        }
     };
 
     const totalProjects = data?.totalProjects ?? 0;
@@ -62,12 +100,12 @@ export const Dashboard: React.FC = () => {
     const pendingTasks = data?.teamSummary?.reduce((sum, member) => sum + member.currentTasks, 0) ?? 0;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6 p-4 md:p-0">
             <div>
-                <Title level={2} className="!mb-2">
+                <Title level={2} className="!mb-2 !text-xl md:!text-2xl">
                     Dashboard
                 </Title>
-                <p className="text-text-muted">Welcome back! Here's an overview of your workspace.</p>
+                <p className="text-text-muted text-sm md:text-base">Welcome back! Here's an overview of your workspace.</p>
             </div>
 
             <Row gutter={[16, 16]}>

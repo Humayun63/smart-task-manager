@@ -10,6 +10,7 @@ import { Register } from '../pages/Register';
 // App Pages
 import { Dashboard } from '../pages/Dashboard';
 import { Teams } from '../pages/Teams';
+import { TeamDetail } from '../pages/TeamDetail';
 import { Projects } from '../pages/Projects';
 import { Tasks } from '../pages/Tasks';
 import { ActivityLog } from '../pages/ActivityLog';
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
       {
         path: '/teams',
         element: <Teams />,
+      },
+      {
+        path: '/teams/:teamId',
+        element: <TeamDetail />,
       },
       {
         path: '/projects',
