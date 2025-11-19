@@ -4,7 +4,7 @@ import { ClockCircleOutlined, ProjectOutlined, CheckSquareOutlined, TeamOutlined
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import { activityLogService, teamService, projectService, taskService } from '../services';
-import type { ActivityLog, Team, Project, Task } from '../types';
+import type { ActivityLog as ActivityLogType, Team, Project, Task } from '../types';
 import { format } from 'date-fns';
 
 const { Title } = Typography;
@@ -12,7 +12,7 @@ const { Title } = Typography;
 export const ActivityLog: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [logs, setLogs] = useState<ActivityLogType[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -64,7 +64,7 @@ export const ActivityLog: React.FC = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const columns: ColumnsType<ActivityLog> = [
+  const columns: ColumnsType<ActivityLogType> = [
     {
       title: 'Activity',
       dataIndex: 'message',

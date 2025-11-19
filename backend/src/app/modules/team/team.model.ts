@@ -17,6 +17,7 @@ const teamMemberSchema = new Schema<ITeamMember>(
             type: Number,
             required: [true, 'Member capacity is required'],
             min: [0, 'Capacity cannot be negative'],
+            max: [5, 'Capacity cannot exceed 5'],
         },
     },
     { _id: true }

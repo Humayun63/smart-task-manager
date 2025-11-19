@@ -103,6 +103,22 @@ export const taskService = {
     return response.data;
   },
 
+  async autoReassignTasks(teamId: string, projectId?: string): Promise<ApiResponse<{
+    reassignedCount: number;
+    reassignments: Array<{
+      taskId: string;
+      taskTitle: string;
+      fromMember: string;
+      toMember: string;
+    }>;
+  }>> {
+    const response = await api.post('/tasks/auto-reassign', {
+      teamId,
+      projectId,
+    });
+    return response.data;
+  },
+
   async reassignTasks(fromMemberId: string, toMemberId: string, teamId: string): Promise<{
     success: boolean;
     reassignedCount: number;

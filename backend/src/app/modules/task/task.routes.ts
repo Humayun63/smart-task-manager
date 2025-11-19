@@ -6,6 +6,7 @@ import {
     updateTask,
     deleteTask,
     getProjectTasks,
+    autoReassignTasks,
 } from './task.controller';
 import { catchAsync } from '../../utils/catchAsync';
 import { authGuard } from '../../middlewares/authGuard';
@@ -14,6 +15,9 @@ const router = Router();
 
 // All task routes require authentication
 router.use(authGuard);
+
+// Auto-reassign tasks (before other routes to avoid conflicts)
+router.post('/auto-reassign', catchAsync(autoReassignTasks));
 
 // Task CRUD operations
 router.post('/', catchAsync(createTask));

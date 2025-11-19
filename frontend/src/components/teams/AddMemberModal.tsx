@@ -98,17 +98,18 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
         <Form.Item
           name="capacity"
-          label="Task Capacity"
+          label="Task Capacity (0-5)"
           rules={[
             { required: true, message: 'Please enter capacity' },
-            { type: 'number', min: 1, message: 'Capacity must be at least 1' },
+            { type: 'number', min: 0, message: 'Capacity must be at least 0' },
+            { type: 'number', max: 5, message: 'Capacity cannot exceed 5' },
           ]}
         >
           <InputNumber
-            placeholder="Maximum number of tasks"
+            placeholder="Maximum number of tasks (0-5)"
             size="large"
-            min={1}
-            max={100}
+            min={0}
+            max={5}
             style={{ width: '100%' }}
           />
         </Form.Item>

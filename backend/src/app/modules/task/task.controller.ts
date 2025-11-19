@@ -422,6 +422,176 @@ export const deleteTask = async (req: Request, res: Response) => {
 
 /**
  * Since 1.0.0
+ * Auto-reassign tasks based on capacity
+ * POST /tasks/auto-reassign
+ * Body: { teamId: string, projectId?: string }
+ */
+export const autoReassignTasks = async (req: Request, res: Response) => {
+    const { teamId, projectId } = req.body;
+    const userId = req.user?._id;
+
+    if (!userId) {
+        throw new AppError(StatusCodes.UNAUTHORIZED, 'User not authenticated');
+    }
+
+    if (!teamId) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Team ID is required');
+    }
+
+    // Verify team exists and user is the owner
+    const team = await Team.findById(teamId);
+    if (!team) {
+        throw new AppError(StatusCodes.NOT_FOUND, 'Team not found');
+    }
+
+    if (team.owner.toString() !== userId.toString()) {
+        throw new AppError(StatusCodes.FORBIDDEN, 'You can only reassign tasks for your own teams');
+    }
+
+    // Build task filter
+    const taskFilter: any = { team: teamId, owner: userId };
+    if (projectId) {
+        taskFilter.project = projectId;
+    }
+
+    // Get all tasks for this team
+    const allTasks = await Task.find(taskFilter);
+
+    // Count current tasks per member
+    const memberTaskCount = new Map<string, number>();
+    const memberTasks = new Map<string, typeof allTasks>();
+
+    team.members.forEach((member) => {
+        memberTaskCount.set(member._id.toString(), 0);
+        memberTasks.set(member._id.toString(), []);
+    });
+
+    // Count tasks and categorize by member
+    allTasks.forEach((task) => {
+        if (task.assignedMember) {
+            const memberId = task.assignedMember.toString();
+            const currentCount = memberTaskCount.get(memberId) || 0;
+            memberTaskCount.set(memberId, currentCount + 1);
+            
+            const tasks = memberTasks.get(memberId) || [];
+            tasks.push(task);
+            memberTasks.set(memberId, tasks);
+        }
+    });
+
+    // Find overloaded members and members with capacity
+    const overloadedMembers: Array<{ memberId: string; member: any; tasks: typeof allTasks }> = [];
+    const availableMembers: Array<{ memberId: string; member: any; availableCapacity: number }> = [];
+
+    team.members.forEach((member) => {
+        const memberId = member._id.toString();
+        const currentTasks = memberTaskCount.get(memberId) || 0;
+        
+        if (currentTasks > member.capacity) {
+            overloadedMembers.push({
+                memberId,
+                member,
+                tasks: memberTasks.get(memberId) || [],
+            });
+        } else if (currentTasks < member.capacity) {
+            availableMembers.push({
+                memberId,
+                member,
+                availableCapacity: member.capacity - currentTasks,
+            });
+        }
+    });
+
+    // If no overloaded members or no available members, return
+    if (overloadedMembers.length === 0) {
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'No overloaded members found',
+            data: {
+                reassignedCount: 0,
+                reassignments: [],
+            },
+        });
+    }
+
+    if (availableMembers.length === 0) {
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'No available members with capacity',
+            data: {
+                reassignedCount: 0,
+                reassignments: [],
+            },
+        });
+    }
+
+    // Sort available members by available capacity (most capacity first)
+    availableMembers.sort((a, b) => b.availableCapacity - a.availableCapacity);
+
+    // Track reassignments
+    const reassignments: Array<{
+        taskId: string;
+        taskTitle: string;
+        fromMember: string;
+        toMember: string;
+    }> = [];
+
+    // Process each overloaded member
+    for (const overloaded of overloadedMembers) {
+        const { memberId, member, tasks } = overloaded;
+        const excessTasks = tasks.length - member.capacity;
+
+        if (excessTasks <= 0) continue;
+
+        // Filter tasks: only reassign Low and Medium priority tasks
+        const reassignableTasks = tasks
+            .filter((task) => task.priority !== TaskPriority.HIGH)
+            .sort((a, b) => {
+                // Sort by priority: Low first, then Medium
+                const priorityOrder = { [TaskPriority.LOW]: 0, [TaskPriority.MEDIUM]: 1, [TaskPriority.HIGH]: 2 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            })
+            .slice(0, excessTasks);
+
+        // Reassign tasks to available members
+        for (const task of reassignableTasks) {
+            // Find a member with capacity
+            const availableMember = availableMembers.find((m) => m.availableCapacity > 0);
+            
+            if (!availableMember) break; // No more capacity available
+
+            // Update task assignment
+            task.assignedMember = new Types.ObjectId(availableMember.memberId);
+            await task.save();
+
+            // Update available capacity
+            availableMember.availableCapacity--;
+
+            // Record reassignment
+            reassignments.push({
+                taskId: task._id.toString(),
+                taskTitle: task.title,
+                fromMember: member.name,
+                toMember: availableMember.member.name,
+            });
+
+            // Re-sort available members
+            availableMembers.sort((a, b) => b.availableCapacity - a.availableCapacity);
+        }
+    }
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: `Successfully reassigned ${reassignments.length} task(s)`,
+        data: {
+            reassignedCount: reassignments.length,
+            reassignments,
+        },
+    });
+};
+
+/**
+ * Since 1.0.0
  * Get all tasks within a project (regardless of owner)
  * GET /projects/:projectId/tasks?member=xxx&priority=xxx&status=xxx
  */

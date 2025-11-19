@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Typography, message } from 'antd';
+import { Row, Col, Typography, message, Button } from 'antd';
 import {
     ProjectOutlined,
     CheckSquareOutlined,
     TeamOutlined,
     ClockCircleOutlined,
+    SwapOutlined,
 } from '@ant-design/icons';
-import { dashboardService } from '../services';
+import { dashboardService, taskService, activityLogService } from '../services';
 import type { DashboardData } from '../types';
 import {
     SummaryCard,
@@ -22,6 +23,7 @@ export const Dashboard: React.FC = () => {
     const [data, setData] = useState<DashboardData | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+    const [reassigning, setReassigning] = useState(false);
 
     const fetchDashboardData = async () => {
         try {
@@ -39,6 +41,61 @@ export const Dashboard: React.FC = () => {
     useEffect(() => {
         fetchDashboardData();
     }, []);
+
+    const handleAutoReassign = async () => {
+        try {
+            setReassigning(true);
+
+            // Check if there are any overloaded members
+            const overloadedMembers = data?.teamSummary?.filter((m) => m.overloaded) || [];
+            
+            if (overloadedMembers.length === 0) {
+                message.info('No overloaded team members found');
+                return;
+            }
+
+            // Get all unique team IDs from overloaded members
+            // Since teamSummary doesn't have teamId, we'll trigger auto-reassign for all teams
+            const { teamService } = await import('../services');
+            const teamsResponse = await teamService.getTeams();
+            const teams = teamsResponse.data.teams;
+
+            let totalReassigned = 0;
+            const allReassignments: any[] = [];
+
+            // Auto-reassign for each team
+            for (const team of teams) {
+                try {
+                    const result = await taskService.autoReassignTasks(team.id);
+                    totalReassigned += result.data.reassignedCount;
+                    allReassignments.push(...result.data.reassignments);
+
+                    // Log activity
+                    if (result.data.reassignedCount > 0) {
+                        await activityLogService.createActivityLog({
+                            team: team.id,
+                            message: `Auto-reassigned ${result.data.reassignedCount} task(s) to balance team workload`,
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Failed to auto-reassign for team ${team.id}:`, error);
+                }
+            }
+
+            if (totalReassigned > 0) {
+                message.success(`Successfully reassigned ${totalReassigned} task(s)`);
+                // Refresh dashboard data
+                await fetchDashboardData();
+            } else {
+                message.info('No tasks needed reassignment');
+            }
+        } catch (error: any) {
+            message.error('Failed to auto-reassign tasks');
+            console.error('Auto-reassignment error:', error);
+        } finally {
+            setReassigning(false);
+        }
+    };
 
     const handleReassignClick = (memberId: string, memberName: string) => {
         setSelectedMember({ id: memberId, name: memberName });
@@ -101,11 +158,27 @@ export const Dashboard: React.FC = () => {
 
     return (
         <div className="space-y-4 md:space-y-6 p-4 md:p-0">
-            <div>
-                <Title level={2} className="!mb-2 !text-xl md:!text-2xl">
-                    Dashboard
-                </Title>
-                <p className="text-text-muted text-sm md:text-base">Welcome back! Here's an overview of your workspace.</p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <Title level={2} className="!mb-2 !text-xl md:!text-2xl">
+                        Dashboard
+                    </Title>
+                    <p className="text-text-muted text-sm md:text-base">Welcome back! Here's an overview of your workspace.</p>
+                </div>
+                
+                {/* Reassign Tasks Button */}
+                {data?.teamSummary && data.teamSummary.some((m) => m.overloaded) && (
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<SwapOutlined />}
+                        loading={reassigning}
+                        onClick={handleAutoReassign}
+                        className="self-start md:self-auto"
+                    >
+                        Reassign Tasks
+                    </Button>
+                )}
             </div>
 
             <Row gutter={[16, 16]}>

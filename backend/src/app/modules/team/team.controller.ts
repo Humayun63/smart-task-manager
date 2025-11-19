@@ -71,8 +71,8 @@ export const addTeamMembers = async (req: Request, res: Response) => {
         if (!member.name || !member.role || member.capacity === undefined) {
             throw new AppError(StatusCodes.BAD_REQUEST, 'Each member must have name, role, and capacity');
         }
-        if (typeof member.capacity !== 'number' || member.capacity < 0) {
-            throw new AppError(StatusCodes.BAD_REQUEST, 'Capacity must be a non-negative number');
+        if (typeof member.capacity !== 'number' || member.capacity < 0 || member.capacity > 5) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'Capacity must be a number between 0 and 5');
         }
     }
 
@@ -315,8 +315,8 @@ export const updateTeamMember = async (req: Request, res: Response) => {
         throw new AppError(StatusCodes.BAD_REQUEST, 'At least one field (name, role, or capacity) must be provided');
     }
 
-    if (capacity !== undefined && (typeof capacity !== 'number' || capacity < 0)) {
-        throw new AppError(StatusCodes.BAD_REQUEST, 'Capacity must be a non-negative number');
+    if (capacity !== undefined && (typeof capacity !== 'number' || capacity < 0 || capacity > 5)) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Capacity must be a number between 0 and 5');
     }
 
     const team = await Team.findById(teamId);
