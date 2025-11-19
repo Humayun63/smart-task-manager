@@ -102,51 +102,102 @@ export const Dashboard: React.FC = () => {
         setModalVisible(true);
     };
 
-    const handleReassignConfirm = async (toMemberId: string) => {
+    const handleReassignConfirm = async (toMemberId: string | null, action: 'assign' | 'auto' | 'unassign') => {
         if (!selectedMember) return;
 
         try {
             // Import services
-            const { taskService, activityService, teamService } = await import('../services');
+            const { taskService, activityLogService, teamService } = await import('../services');
 
             // Get all teams to find which team this member belongs to
             const teamsResponse = await teamService.getTeams();
             const teams = teamsResponse.data.teams;
 
-            // Find the team containing both members
+            // Find the team containing this member
             const team = teams.find((t) =>
-                t.members.some((m) => m.id === selectedMember.id) &&
-                t.members.some((m) => m.id === toMemberId)
+                t.members.some((m) => m.id === selectedMember.id)
             );
 
             if (!team) {
-                message.error('Could not find team for these members');
+                message.error('Could not find team for this member');
                 return;
             }
 
-            // Reassign all tasks from the overloaded member to the selected member
-            const result = await taskService.reassignTasks(
-                selectedMember.id,
-                toMemberId,
-                team.id
-            );
-
-            // Create activity log
             const fromMemberName = selectedMember.name;
-            const toMember = team.members.find((m) => m.id === toMemberId);
-            const toMemberName = toMember?.name || 'Unknown';
 
-            await activityService.createLog({
-                teamId: team.id,
-                message: `${result.reassignedCount} task(s) reassigned from ${fromMemberName} to ${toMemberName}`,
-            });
+            if (action === 'assign') {
+                // Manual assignment to specific member
+                if (!toMemberId) {
+                    message.error('Please select a member to assign to');
+                    return;
+                }
 
-            message.success(`Successfully reassigned ${result.reassignedCount} task(s)`);
+                // Verify the target member is in the same team
+                const toMemberInTeam = team.members.some((m) => m.id === toMemberId);
+                if (!toMemberInTeam) {
+                    message.error('Target member not found in the same team');
+                    return;
+                }
+
+                // Reassign all tasks from the overloaded member to the selected member
+                const result = await taskService.reassignTasks(
+                    selectedMember.id,
+                    toMemberId,
+                    team.id
+                );
+
+                const toMember = team.members.find((m) => m.id === toMemberId);
+                const toMemberName = toMember?.name || 'Unknown';
+
+                await activityLogService.createActivityLog({
+                    team: team.id,
+                    message: `${result.reassignedCount} task(s) reassigned from ${fromMemberName} to ${toMemberName}`,
+                });
+
+                message.success(`Successfully reassigned ${result.reassignedCount} task(s)`);
+            } else if (action === 'auto') {
+                // Auto-assign tasks to balance workload
+                const result = await taskService.autoReassignTasks(team.id);
+
+                if (result.data.reassignedCount > 0) {
+                    await activityLogService.createActivityLog({
+                        team: team.id,
+                        message: `Auto-reassigned ${result.data.reassignedCount} task(s) from ${fromMemberName} to balance team workload`,
+                    });
+
+                    message.success(`Successfully auto-reassigned ${result.data.reassignedCount} task(s)`);
+                } else {
+                    message.info('No tasks needed reassignment');
+                }
+            } else if (action === 'unassign') {
+                // Unassign all tasks from this member
+                const tasksResponse = await taskService.getTasks({ member: selectedMember.id });
+                const tasksToUnassign = tasksResponse.data.tasks.filter((task) => task.team.id === team.id);
+
+                let unassignedCount = 0;
+                for (const task of tasksToUnassign) {
+                    try {
+                        await taskService.updateTask(task.id, {
+                            assignedMember: undefined,
+                        });
+                        unassignedCount++;
+                    } catch (error) {
+                        console.error(`Failed to unassign task ${task.id}:`, error);
+                    }
+                }
+
+                await activityLogService.createActivityLog({
+                    team: team.id,
+                    message: `${unassignedCount} task(s) unassigned from ${fromMemberName}`,
+                });
+
+                message.success(`Successfully unassigned ${unassignedCount} task(s)`);
+            }
 
             // Refresh dashboard data
             await fetchDashboardData();
         } catch (error: any) {
-            message.error('Failed to reassign tasks');
+            message.error('Failed to process reassignment');
             console.error('Reassignment error:', error);
         }
     };
