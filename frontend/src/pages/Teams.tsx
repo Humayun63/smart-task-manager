@@ -50,14 +50,6 @@ console.log(teams)
             setDeleteLoading(true);
             await teamService.deleteTeam(teamToDelete.id);
             
-            // Log activity
-            await activityLogService.createActivityLog({
-                message: `Team "${teamToDelete.name}" was deleted`,
-                entity: 'team',
-                entityId: teamToDelete.id,
-                team: teamToDelete.id,
-            });
-            
             message.success('Team deleted successfully');
             setDeleteModalVisible(false);
             setTeamToDelete(null);
@@ -79,8 +71,9 @@ console.log(teams)
         navigate(`/teams/${teamId}`);
     };
 
-    const handleTeamCreated = () => {
+    const handleTeamCreated = (id: string) => {
         fetchTeams();
+        handleView(id);
     };
 
     const columns: ColumnsType<Team> = [

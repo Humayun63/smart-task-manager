@@ -10,12 +10,14 @@ interface CreateProjectModalProps {
   visible: boolean;
   onClose: () => void;
   onSuccess: (projectId: string) => void;
+  initialTeamId?: string;
 }
 
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   visible,
   onClose,
   onSuccess,
+  initialTeamId,
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -25,8 +27,12 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   useEffect(() => {
     if (visible) {
       fetchTeams();
+      // Set initial team value if provided
+      if (initialTeamId) {
+        form.setFieldsValue({ team: initialTeamId });
+      }
     }
-  }, [visible]);
+  }, [visible, initialTeamId]);
 
   const fetchTeams = async () => {
     try {

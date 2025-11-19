@@ -262,7 +262,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
             name="description"
             label="Description"
             rules={[
-              { required: false },
+              { required: true, message: 'Please enter task description' },
             ]}
           >
             <TextArea placeholder="Enter task description (optional)" rows={4} size="large" />

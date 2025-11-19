@@ -10,7 +10,7 @@ import {
   ExclamationCircleOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import { projectService, activityLogService } from '../services';
 import type { Project } from '../types';
@@ -21,6 +21,7 @@ const { Title } = Typography;
 
 export const Projects: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -29,6 +30,7 @@ export const Projects: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [initialTeamId, setInitialTeamId] = useState<string | undefined>(undefined);
 
   const fetchProjects = async () => {
     try {
@@ -45,6 +47,15 @@ export const Projects: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
+    
+    // Check if navigated with selectedTeamId state
+    const state = location.state as { selectedTeamId?: string };
+    if (state?.selectedTeamId) {
+      setInitialTeamId(state.selectedTeamId);
+      setCreateModalVisible(true);
+      // Clear the state to prevent reopening on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
   }, []);
 
   const handleDeleteClick = (project: Project) => {
@@ -229,8 +240,12 @@ export const Projects: React.FC = () => {
 
       <CreateProjectModal
         visible={createModalVisible}
-        onClose={() => setCreateModalVisible(false)}
+        onClose={() => {
+          setCreateModalVisible(false);
+          setInitialTeamId(undefined);
+        }}
         onSuccess={handleProjectCreated}
+        initialTeamId={initialTeamId}
       />
 
       <EditProjectModal

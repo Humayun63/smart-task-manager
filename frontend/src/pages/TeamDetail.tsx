@@ -20,10 +20,11 @@ import {
     UserOutlined,
     MoreOutlined,
     ExclamationCircleOutlined,
+    ProjectOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { teamService, taskService } from '../services';
-import type { Team, Task } from '../types';
+import { teamService, taskService, projectService } from '../services';
+import type { Team, Task, Project } from '../types';
 import { AddMemberModal, EditMemberModal, ReassignTasksModal } from '../components/teams';
 
 const { Title } = Typography;
@@ -42,6 +43,7 @@ export const TeamDetail: React.FC = () => {
     const [memberToDelete, setMemberToDelete] = useState<Team['members'][0] | null>(null);
     const [deleteMemberLoading, setDeleteMemberLoading] = useState(false);
     const [reassignModalVisible, setReassignModalVisible] = useState(false);
+    const [teamProject, setTeamProject] = useState<Project | null>(null);
 
     const fetchTeamDetails = async () => {
         if (!teamId) return;
@@ -66,6 +68,16 @@ export const TeamDetail: React.FC = () => {
             });
 
             setMemberWorkload(workload);
+
+            // Fetch project for this team
+            try {
+                const projectsResponse = await projectService.getProjects();
+                const project = projectsResponse.data.projects.find((p) => p.team.id === teamId);
+                setTeamProject(project || null);
+            } catch (error: any) {
+                console.error('Project fetch error:', error);
+                // Don't show error message for project fetch failure
+            }
         } catch (error: any) {
             message.error('Failed to load team details');
             console.error('Team detail fetch error:', error);
@@ -244,12 +256,34 @@ export const TeamDetail: React.FC = () => {
                             {team.members.length} {team.members.length === 1 ? 'member' : 'members'}
                         </p>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex gap-2 w-full sm:w-auto flex-wrap">
+                        {teamProject ? (
+                            <Button
+                                type="default"
+                                icon={<ProjectOutlined />}
+                                size="large"
+                                onClick={() => navigate(`/projects/${teamProject.id}`)}
+                                className="flex-1 sm:flex-initial"
+                            >
+                                View Project
+                            </Button>
+                        ) : (
+                            <Button
+                                type="default"
+                                icon={<ProjectOutlined />}
+                                size="large"
+                                onClick={() => navigate('/projects', { state: { selectedTeamId: teamId } })}
+                                className="flex-1 sm:flex-initial"
+                            >
+                                Add Project
+                            </Button>
+                        )}
                         <Button
                             type="default"
                             icon={<ExclamationCircleOutlined />}
                             size="large"
                             onClick={() => setReassignModalVisible(true)}
+                            disabled={tasks.length === 0}
                             className="flex-1 sm:flex-initial"
                         >
                             Reassign Tasks
