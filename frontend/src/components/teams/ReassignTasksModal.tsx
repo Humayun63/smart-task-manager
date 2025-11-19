@@ -5,7 +5,8 @@ import {
   LoadingOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { taskService, activityLogService } from '../../services';
+import { taskService } from '../../services';
+import { activityLogService } from '../../services/activityLog.service';
 import type { Task, TeamMember } from '../../types';
 
 interface ReassignTasksModalProps {
@@ -151,8 +152,6 @@ export const ReassignTasksModal: React.FC<ReassignTasksModalProps> = ({
         // Log activity
         await activityLogService.createActivityLog({
           message: `Task "${plan.task.title}" reassigned from ${plan.fromMember.name} to ${plan.toMember.name}`,
-          entity: 'task',
-          entityId: plan.task.id,
           project: plan.task.project.id,
           task: plan.task.id,
           team: teamId,
@@ -227,7 +226,7 @@ export const ReassignTasksModal: React.FC<ReassignTasksModalProps> = ({
 
         {currentStep === 0 && (
           <div className="space-y-4">
-            <div className="flex items-start gap-2 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="flex mt-4 items-start gap-2 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
               <ExclamationCircleOutlined className="text-yellow-600 mt-1" />
               <div className="text-sm">
                 <p className="font-medium text-yellow-800 mb-1">About Task Reassignment</p>
@@ -255,7 +254,7 @@ export const ReassignTasksModal: React.FC<ReassignTasksModalProps> = ({
 
         {currentStep === 1 && reassignmentPlan.length > 0 && (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-blue-800 text-sm">
                 <strong>{reassignmentPlan.length}</strong> task(s) will be reassigned
               </p>
@@ -265,7 +264,7 @@ export const ReassignTasksModal: React.FC<ReassignTasksModalProps> = ({
               <List
                 dataSource={reassignmentPlan}
                 renderItem={(plan) => (
-                  <List.Item className="!px-4 !py-3 bg-gray-50 mb-2 rounded">
+                  <List.Item className="!px-4 !py-3 bg-gray-50 mb-2 rounded !bg-[#001529]">
                     <div className="w-full space-y-2">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">

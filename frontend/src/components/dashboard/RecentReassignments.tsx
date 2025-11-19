@@ -17,15 +17,15 @@ export const RecentReassignments: React.FC<RecentReassignmentsProps> = ({
 }) => {
   if (!loading && reassignments.length === 0) {
     return (
-      <Card title="Recent Activity">
-        <Empty description="No recent activity logs" />
+      <Card title="Recent Reassignment">
+        <Empty description="No Recent Reassignment logs" />
       </Card>
     );
   }
 
   return (
     <Card 
-      title="Recent Activity" 
+      title="Recent Reassignment" 
       loading={loading}
       extra={<Text type="secondary">Last 5 activities</Text>}
     >

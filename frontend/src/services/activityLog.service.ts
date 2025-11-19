@@ -58,8 +58,8 @@ class ActivityLogService {
 
   async createActivityLog(data: {
     message: string;
-    entity: string;
-    entityId: string;
+    entity?: string;
+    entityId?: string;
     project?: string;
     task?: string;
     team?: string;
@@ -72,11 +72,11 @@ class ActivityLogService {
       teamId: data.team,
     };
     
-    const response = await api.post<{ log: any }>('/activity-log', backendData);
+    const response = await api.post('/activity-log', backendData);
     return {
       ...response,
       data: {
-        log: transformActivityLog(response.data.log),
+        log: transformActivityLog(response.data.data?.log || response.data.log),
       },
     };
   }
