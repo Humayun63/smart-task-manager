@@ -8,13 +8,25 @@ import type {
   ApiResponse,
 } from '../types';
 
+// Transform backend _id to frontend id
+const transformTeam = (team: any): Team => ({
+  ...team,
+  id: team._id ||team.id,
+  members: team.members.map((member: any) => ({
+    ...member,
+    id: member._id || member.id,
+  })),
+});
+
+const transformTeams = (teams: any[]): Team[] => teams.map(transformTeam);
+
 export const teamService = {
   async createTeam(data: CreateTeamData): Promise<ApiResponse<{ team: Team }>> {
     const response = await api.post('/teams', data);
     return {
       ...response.data,
       data: {
-        team: response.data.data.team
+        team: transformTeam(response.data.data.team)
       },
     };
   },
@@ -24,7 +36,7 @@ export const teamService = {
     return {
       ...response.data,
       data: {
-        teams: response.data.data.teams,
+        teams: transformTeams(response.data.data.teams),
       },
     };
   },
@@ -34,7 +46,7 @@ export const teamService = {
     return {
       ...response.data,
       data: {
-        team: response.data.data.team,
+        team: transformTeam(response.data.data.team),
       },
     };
   },

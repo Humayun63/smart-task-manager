@@ -14,6 +14,9 @@ import { TeamDetail } from '../pages/TeamDetail';
 import { Projects } from '../pages/Projects';
 import { ProjectDetail } from '../pages/ProjectDetail';
 import { Tasks } from '../pages/Tasks';
+import { CreateTask } from '../pages/CreateTask';
+import { EditTask } from '../pages/EditTask';
+import { KanbanBoard } from '../pages/KanbanBoard';
 import { ActivityLog } from '../pages/ActivityLog';
 import { NotFound } from '../pages/NotFound';
 
@@ -66,8 +69,20 @@ export const router = createBrowserRouter([
         element: <ProjectDetail />,
       },
       {
+        path: '/projects/:projectId/tasks/kanban',
+        element: <KanbanBoard />,
+      },
+      {
         path: '/tasks',
         element: <Tasks />,
+      },
+      {
+        path: '/tasks/create',
+        element: <CreateTask />,
+      },
+      {
+        path: '/tasks/:taskId/edit',
+        element: <EditTask />,
       },
       {
         path: '/activity-log',
