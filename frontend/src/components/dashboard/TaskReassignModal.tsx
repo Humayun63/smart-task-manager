@@ -7,7 +7,7 @@ interface TaskReassignModalProps {
     visible: boolean;
     onClose: () => void;
     fromMember: {
-        _id: string;
+        id: string;
         name: string;
     } | null;
     teamMembers: TeamMemberSummary[];
@@ -50,7 +50,7 @@ export const TaskReassignModal: React.FC<TaskReassignModalProps> = ({
 
     // Filter out the current member and overloaded members
     const availableMembers = teamMembers.filter(
-        (m) => m.memberId !== fromMember?._id && !m.overloaded
+        (m) => m.memberId !== fromMember?.id && !m.overloaded
     );
 
     return (

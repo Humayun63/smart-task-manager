@@ -22,6 +22,9 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ProjectOutlined,
+  PlusOutlined,
+  EyeOutlined,
+  TableOutlined,
 } from '@ant-design/icons';
 import { projectService, taskService } from '../services';
 import type { Project, Task } from '../types';
@@ -108,15 +111,35 @@ export const ProjectDetail: React.FC = () => {
               {project.description}
             </Paragraph>
           </div>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="large"
-            onClick={() => setEditModalVisible(true)}
-            className="w-full sm:w-auto"
-          >
-            Edit Project
-          </Button>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <Button
+              type="default"
+              icon={<PlusOutlined />}
+              size="large"
+              onClick={() => navigate('/tasks/create', { state: { projectId: project.id } })}
+              className="flex-1 sm:flex-initial"
+            >
+              Add Task
+            </Button>
+            <Button
+              type="default"
+              icon={<TableOutlined />}
+              size="large"
+              onClick={() => navigate(`/projects/${projectId}/tasks/kanban`)}
+              className="flex-1 sm:flex-initial"
+            >
+              Kanban Board
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              size="large"
+              onClick={() => setEditModalVisible(true)}
+              className="flex-1 sm:flex-initial"
+            >
+              Edit Project
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -206,6 +229,72 @@ export const ProjectDetail: React.FC = () => {
           />
         )}
       </Card>
+
+      {/* Task List */}
+      {tasks.length > 0 && (
+        <Card title="Tasks" className="shadow-sm">
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => navigate(`/tasks/${task.id}/edit`)}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-medium text-text-primary">{task.title}</h3>
+                      <Tag
+                        color={
+                          task.status === 'Done'
+                            ? 'success'
+                            : task.status === 'In Progress'
+                            ? 'processing'
+                            : 'default'
+                        }
+                      >
+                        {task.status}
+                      </Tag>
+                      <Tag
+                        color={
+                          task.priority === 'High'
+                            ? 'red'
+                            : task.priority === 'Medium'
+                            ? 'orange'
+                            : 'blue'
+                        }
+                      >
+                        {task.priority}
+                      </Tag>
+                    </div>
+                    {task.description && (
+                      <p className="text-sm text-text-muted mb-2 line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+                    {task.assignedMember && (
+                      <div className="flex items-center gap-2 text-sm text-text-muted">
+                        <UserOutlined />
+                        <span>Assigned to {task.assignedMember.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    type="text"
+                    icon={<EyeOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/tasks/${task.id}/edit`);
+                    }}
+                  >
+                    View
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {projectId && (
         <EditProjectModal

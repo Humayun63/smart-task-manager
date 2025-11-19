@@ -1,35 +1,232 @@
-import React from 'react';
-import { Card, Typography, Empty, Timeline, Space, Select } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Card, Typography, Table, Space, Select, Tag, message, Spin } from 'antd';
+import { ClockCircleOutlined, ProjectOutlined, CheckSquareOutlined, TeamOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import type { ColumnsType } from 'antd/es/table';
+import { activityLogService, teamService, projectService, taskService } from '../services';
+import type { ActivityLog, Team, Project, Task } from '../types';
+import { format } from 'date-fns';
 
 const { Title } = Typography;
 
 export const ActivityLog: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  
+  const [filters, setFilters] = useState({
+    team: undefined as string | undefined,
+    project: undefined as string | undefined,
+    task: undefined as string | undefined,
+  });
+
+  const fetchActivityLogs = async () => {
+    try {
+      setLoading(true);
+      const response = await activityLogService.getActivityLogs(filters);
+      setLogs(response.data.logs);
+    } catch (error: any) {
+      message.error('Failed to load activity logs');
+      console.error('Activity logs fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const [teamsRes, projectsRes, tasksRes] = await Promise.all([
+        teamService.getTeams(),
+        projectService.getProjects(),
+        taskService.getTasks(),
+      ]);
+      setTeams(teamsRes.data.teams);
+      setProjects(projectsRes.data.projects);
+      setTasks(tasksRes.data.tasks);
+    } catch (error: any) {
+      console.error('Failed to load filter options:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  useEffect(() => {
+    fetchActivityLogs();
+  }, [filters]);
+
+  const handleFilterChange = (key: string, value: string | undefined) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const columns: ColumnsType<ActivityLog> = [
+    {
+      title: 'Activity',
+      dataIndex: 'message',
+      key: 'message',
+      width: '40%',
+      render: (message: string, record) => (
+        <div className="space-y-1">
+          <p className="text-text-primary">{message}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {record.project && (
+              <Tag
+                icon={<ProjectOutlined />}
+                color="blue"
+                className="cursor-pointer hover:opacity-80"
+                onClick={() => navigate(`/projects/${record.project?.id}`)}
+              >
+                {record.project.name}
+              </Tag>
+            )}
+            {record.task && (
+              <Tag
+                icon={<CheckSquareOutlined />}
+                color="green"
+                className="cursor-pointer hover:opacity-80"
+                onClick={() => navigate(`/tasks/${record.task?.id}/edit`)}
+              >
+                {record.task.title}
+              </Tag>
+            )}
+            {record.team && (
+              <Tag
+                icon={<TeamOutlined />}
+                color="purple"
+                className="cursor-pointer hover:opacity-80"
+                onClick={() => navigate(`/teams/${record.team?.id}`)}
+              >
+                {record.team.name}
+              </Tag>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Created By',
+      key: 'createdBy',
+      width: 180,
+      responsive: ['md'] as any,
+      render: (_: any, record) => (
+        <div>
+          <p className="font-medium text-text-primary">{record.createdBy.name}</p>
+          <p className="text-xs text-text-muted">{record.createdBy.email}</p>
+        </div>
+      ),
+    },
+    {
+      title: 'Time',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 180,
+      responsive: ['sm'] as any,
+      render: (date: string) => (
+        <div className="text-sm">
+          <p className="text-text-primary">{format(new Date(date), 'MMM dd, yyyy')}</p>
+          <p className="text-xs text-text-muted">{format(new Date(date), 'hh:mm a')}</p>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
       <div>
-        <Title level={2} className="!mb-2">
+        <Title level={2} className="!mb-2 !text-xl md:!text-2xl">
           Activity Log
         </Title>
-        <p className="text-text-muted">Track all activities and changes in your workspace.</p>
+        <p className="text-text-muted text-sm md:text-base">
+          Track all activities and changes in your workspace.
+        </p>
       </div>
 
       {/* Filters */}
       <Card>
-        <Space wrap>
-          <Select placeholder="Filter by Team" style={{ width: 200 }} allowClear />
-          <Select placeholder="Filter by Project" style={{ width: 200 }} allowClear />
-          <Select placeholder="Filter by Task" style={{ width: 200 }} allowClear />
+        <Space wrap className="w-full">
+          <Select
+            placeholder="Filter by Team"
+            style={{ minWidth: 200 }}
+            allowClear
+            value={filters.team}
+            onChange={(value) => handleFilterChange('team', value)}
+            className="w-full sm:w-auto"
+          >
+            {teams.map((team) => (
+              <Select.Option key={team.id} value={team.id}>
+                {team.name}
+              </Select.Option>
+            ))}
+          </Select>
+
+          <Select
+            placeholder="Filter by Project"
+            style={{ minWidth: 200 }}
+            allowClear
+            value={filters.project}
+            onChange={(value) => handleFilterChange('project', value)}
+            className="w-full sm:w-auto"
+          >
+            {projects.map((project) => (
+              <Select.Option key={project.id} value={project.id}>
+                {project.name}
+              </Select.Option>
+            ))}
+          </Select>
+
+          <Select
+            placeholder="Filter by Task"
+            style={{ minWidth: 200 }}
+            allowClear
+            value={filters.task}
+            onChange={(value) => handleFilterChange('task', value)}
+            className="w-full sm:w-auto"
+          >
+            {tasks.map((task) => (
+              <Select.Option key={task.id} value={task.id}>
+                {task.title}
+              </Select.Option>
+            ))}
+          </Select>
         </Space>
       </Card>
 
-      {/* Activity Timeline */}
+      {/* Activity Log Table */}
       <Card>
-        <Empty
-          description="No activity logs yet"
-          image={<ClockCircleOutlined style={{ fontSize: 48 }} className="text-text-muted" />}
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table
+              columns={columns}
+              dataSource={logs}
+              rowKey="id"
+              scroll={{ x: 768 }}
+              pagination={{
+                pageSize: 20,
+                showSizeChanger: true,
+                showTotal: (total) => `Total ${total} activities`,
+                responsive: true,
+              }}
+              locale={{
+                emptyText: (
+                  <div className="py-8">
+                    <ClockCircleOutlined className="text-4xl text-text-muted mb-2" />
+                    <p className="text-text-muted">No activity logs yet</p>
+                  </div>
+                ),
+              }}
+            />
+          </div>
+        )}
       </Card>
     </div>
   );
 };
+

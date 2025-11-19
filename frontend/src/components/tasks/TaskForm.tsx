@@ -14,9 +14,10 @@ const { TextArea } = Input;
 interface TaskFormProps {
   task?: Task | null;
   mode: 'create' | 'edit';
+  preSelectedProjectId?: string;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, mode }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProjectId }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -41,8 +42,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode }) => {
         assignedMember: task.assignedMember?.id,
       });
       loadProjectTeam(task.project.id);
+    } else if (preSelectedProjectId && mode === 'create') {
+      form.setFieldValue('project', preSelectedProjectId);
+      loadProjectTeam(preSelectedProjectId);
     }
-  }, [task, mode]);
+  }, [task, mode, preSelectedProjectId]);
 
   const fetchProjects = async () => {
     try {

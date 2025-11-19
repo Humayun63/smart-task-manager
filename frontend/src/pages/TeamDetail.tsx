@@ -23,8 +23,8 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { teamService, taskService } from '../services';
-import type { Team } from '../types';
-import { AddMemberModal, EditMemberModal } from '../components/teams';
+import type { Team, Task } from '../types';
+import { AddMemberModal, EditMemberModal, ReassignTasksModal } from '../components/teams';
 
 const { Title } = Typography;
 
@@ -33,6 +33,7 @@ export const TeamDetail: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [team, setTeam] = useState<Team | null>(null);
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [memberWorkload, setMemberWorkload] = useState<Record<string, number>>({});
     const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
     const [editMemberModalVisible, setEditMemberModalVisible] = useState(false);
@@ -40,6 +41,7 @@ export const TeamDetail: React.FC = () => {
     const [deleteMemberModalVisible, setDeleteMemberModalVisible] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState<Team['members'][0] | null>(null);
     const [deleteMemberLoading, setDeleteMemberLoading] = useState(false);
+    const [reassignModalVisible, setReassignModalVisible] = useState(false);
 
     const fetchTeamDetails = async () => {
         if (!teamId) return;
@@ -52,11 +54,15 @@ export const TeamDetail: React.FC = () => {
             // Fetch task count for each member
             const tasksResponse = await taskService.getTasks();
             const tasks = tasksResponse.data.tasks;
+            
+            // Filter tasks for this team
+            const teamTasks = tasks.filter((task) => task.team.id === teamId);
+            setTasks(teamTasks);
 
             const workload: Record<string, number> = {};
             response.data.team.members.forEach((member) => {
-                const memberTasks = tasks.filter((task) => task.assignedMember === member._id);
-                workload[member._id] = memberTasks.length;
+                const memberTasks = teamTasks.filter((task) => task.assignedMember?.id === member.id);
+                workload[member.id] = memberTasks.length;
             });
 
             setMemberWorkload(workload);
@@ -82,7 +88,7 @@ export const TeamDetail: React.FC = () => {
 
         try {
             setDeleteMemberLoading(true);
-            await teamService.deleteMember(teamId, memberToDelete._id);
+            await teamService.deleteMember(teamId, memberToDelete.id);
             message.success('Member removed successfully');
             setDeleteMemberModalVisible(false);
             setMemberToDelete(null);
@@ -122,7 +128,7 @@ export const TeamDetail: React.FC = () => {
             width: 200,
             responsive: ['md'] as any,
             render: (_: any, record) => {
-                const currentTasks = memberWorkload[record._id] || 0;
+                const currentTasks = memberWorkload[record.id] || 0;
                 const percentage = Math.min((currentTasks / record.capacity) * 100, 100);
                 const isOverloaded = currentTasks > record.capacity;
 
@@ -151,7 +157,7 @@ export const TeamDetail: React.FC = () => {
             align: 'center',
             responsive: ['sm'] as any,
             render: (_: any, record) => {
-                const currentTasks = memberWorkload[record._id] || 0;
+                const currentTasks = memberWorkload[record.id] || 0;
                 const isOverloaded = currentTasks > record.capacity;
                 const percentage = (currentTasks / record.capacity) * 100;
 
@@ -238,15 +244,26 @@ export const TeamDetail: React.FC = () => {
                             {team.members.length} {team.members.length === 1 ? 'member' : 'members'}
                         </p>
                     </div>
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        size="large"
-                        onClick={() => setAddMemberModalVisible(true)}
-                        className="w-full sm:w-auto"
-                    >
-                        Add Member
-                    </Button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <Button
+                            type="default"
+                            icon={<ExclamationCircleOutlined />}
+                            size="large"
+                            onClick={() => setReassignModalVisible(true)}
+                            className="flex-1 sm:flex-initial"
+                        >
+                            Reassign Tasks
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            size="large"
+                            onClick={() => setAddMemberModalVisible(true)}
+                            className="flex-1 sm:flex-initial"
+                        >
+                            Add Member
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -255,7 +272,7 @@ export const TeamDetail: React.FC = () => {
                     <Table
                         columns={columns}
                         dataSource={team.members}
-                        rowKey="_id"
+                        rowKey="id"
                         scroll={{ x: 768 }}
                         pagination={{
                             pageSize: 10,
@@ -313,6 +330,16 @@ export const TeamDetail: React.FC = () => {
                             This member will be removed from the team, but their assigned tasks will remain.
                         </p>
                     </Modal>
+
+                    <ReassignTasksModal
+                        visible={reassignModalVisible}
+                        onClose={() => setReassignModalVisible(false)}
+                        onSuccess={fetchTeamDetails}
+                        teamId={teamId}
+                        teamName={team.name}
+                        members={team.members}
+                        tasks={tasks}
+                    />
                 </>
             )}
         </div>

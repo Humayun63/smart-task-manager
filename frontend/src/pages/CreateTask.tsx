@@ -1,10 +1,14 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Typography } from 'antd';
 import { TaskForm } from '../components/tasks';
 
 const { Title } = Typography;
 
 export const CreateTask: React.FC = () => {
+  const location = useLocation();
+  const preSelectedProjectId = location.state?.projectId;
+
   return (
     <div className="space-y-4 md:space-y-6 p-4 md:p-0">
       <div>
@@ -16,7 +20,7 @@ export const CreateTask: React.FC = () => {
         </p>
       </div>
 
-      <TaskForm mode="create" />
+      <TaskForm mode="create" preSelectedProjectId={preSelectedProjectId} />
     </div>
   );
 };
