@@ -146,58 +146,6 @@ export const ActivityLog: React.FC = () => {
         </p>
       </div>
 
-      {/* Filters */}
-      <div>
-        <Card>
-            <Space wrap className="w-full">
-            <Select
-                placeholder="Filter by Team"
-                style={{ minWidth: 200 }}
-                allowClear
-                value={filters.team}
-                onChange={(value) => handleFilterChange('team', value)}
-                className="w-full sm:w-auto"
-            >
-                {teams.map((team) => (
-                <Select.Option key={team.id} value={team.id}>
-                    {team.name}
-                </Select.Option>
-                ))}
-            </Select>
-
-            <Select
-                placeholder="Filter by Project"
-                style={{ minWidth: 200 }}
-                allowClear
-                value={filters.project}
-                onChange={(value) => handleFilterChange('project', value)}
-                className="w-full sm:w-auto"
-            >
-                {projects.map((project) => (
-                <Select.Option key={project.id} value={project.id}>
-                    {project.name}
-                </Select.Option>
-                ))}
-            </Select>
-
-            <Select
-                placeholder="Filter by Task"
-                style={{ minWidth: 200 }}
-                allowClear
-                value={filters.task}
-                onChange={(value) => handleFilterChange('task', value)}
-                className="w-full sm:w-auto"
-            >
-                {tasks.map((task) => (
-                <Select.Option key={task.id} value={task.id}>
-                    {task.title}
-                </Select.Option>
-                ))}
-            </Select>
-            </Space>
-        </Card>
-      </div>
-
       {/* Activity Log Table */}
       <Card>
         {loading ? (
