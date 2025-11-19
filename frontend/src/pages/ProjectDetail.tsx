@@ -23,13 +23,12 @@ import {
   ClockCircleOutlined,
   ProjectOutlined,
   PlusOutlined,
-  EyeOutlined,
   TableOutlined,
 } from '@ant-design/icons';
 import { projectService, taskService } from '../services';
 import type { Project, Task } from '../types';
 import { EditProjectModal } from '../components/projects';
-import { CreateTaskModal } from '../components/tasks';
+import { CreateTaskModal, EditTaskModal } from '../components/tasks';
 import { formatDistanceToNow } from 'date-fns';
 
 const { Title, Paragraph } = Typography;
@@ -42,6 +41,8 @@ export const ProjectDetail: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [createTaskModalVisible, setCreateTaskModalVisible] = useState(false);
+  const [editTaskModalVisible, setEditTaskModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const fetchProjectDetails = async () => {
     if (!projectId) return;
@@ -66,6 +67,11 @@ export const ProjectDetail: React.FC = () => {
   useEffect(() => {
     fetchProjectDetails();
   }, [projectId]);
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setEditTaskModalVisible(true);
+  };
 
   if (loading) {
     return (
@@ -243,8 +249,7 @@ export const ProjectDetail: React.FC = () => {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => navigate(`/tasks/${task.id}/edit`)}
+                className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -286,14 +291,11 @@ export const ProjectDetail: React.FC = () => {
                     )}
                   </div>
                   <Button
-                    type="text"
-                    icon={<EyeOutlined />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/tasks/${task.id}/edit`);
-                    }}
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditTask(task)}
                   >
-                    View
+                    Edit
                   </Button>
                 </div>
               </div>
@@ -316,6 +318,16 @@ export const ProjectDetail: React.FC = () => {
             onClose={() => setCreateTaskModalVisible(false)}
             onSuccess={fetchProjectDetails}
             projectId={projectId}
+          />
+          
+          <EditTaskModal
+            visible={editTaskModalVisible}
+            onClose={() => {
+              setEditTaskModalVisible(false);
+              setSelectedTask(null);
+            }}
+            onSuccess={fetchProjectDetails}
+            task={selectedTask}
           />
         </>
       )}
