@@ -17,6 +17,11 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
+  async verifyAuth(): Promise<AuthResponse> {
+    const response = await api.get<AuthResponse>('/auth/me');
+    return response.data;
+  },
+
   getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;

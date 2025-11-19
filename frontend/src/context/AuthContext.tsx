@@ -15,13 +15,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore auth state from localStorage on mount
-    const currentUser = authService.getCurrentUser();
+    // Verify auth state with backend on mount
+    const verifyAuth = async () => {
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser) {
+        try {
+          // Verify the cookie is still valid by calling /me endpoint
+          const response = await authService.verifyAuth();
+          const userData = response.data.user;
+          
+          // Update user data in case it changed
+          authService.setUser(userData);
+          setUser(userData);
+        } catch (error) {
+          // Cookie is invalid or expired, clear local state
+          console.log('Auth verification failed, clearing session');
+          authService.clearUser();
+          setUser(null);
+        }
+      }
+      
+      setLoading(false);
+    };
     
-    if (currentUser) {
-      setUser(currentUser);
-    }
-    setLoading(false);
+    verifyAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {

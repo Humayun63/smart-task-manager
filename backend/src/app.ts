@@ -12,8 +12,23 @@ app.use(express.json());
 app.use(cookieParser()); // Parse cookies
 
 // CORS configuration with credentials support
+const allowedOrigins = [
+    envVars.CORS_ORIGIN,
+    'https://smart-task-manager-client-three.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-    origin: envVars.CORS_ORIGIN || 'https://smart-task-manager-client-three.vercel.app',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

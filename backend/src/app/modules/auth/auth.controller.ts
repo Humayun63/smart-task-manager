@@ -88,15 +88,46 @@ export const loginUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = async (req: Request, res: Response) => {
     try {
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
         });
 
         res.status(StatusCodes.OK).json({
             success: true,
             message: 'Logged out successfully',
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Since 1.0.0
+ * Get current authenticated user
+ * Returns user info from the authenticated request
+ */
+export const getCurrentUser = async (req: Request, res: Response) => {
+    try {
+        // User is attached to request by authGuard middleware
+        const user = req.user;
+        
+        if (!user) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Not authenticated');
+        }
+
+        res.status(StatusCodes.OK).json({
+            success: true,
+            data: {
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                },
+            },
         });
     } catch (error) {
         throw error;

@@ -15,9 +15,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Don't redirect if we're already on the login or register page
+      // Don't redirect if we're already on the login or register page, or if it's the /me endpoint
       const currentPath = window.location.pathname;
-      if (currentPath !== '/login' && currentPath !== '/register') {
+      const isAuthCheck = error.config?.url?.includes('/auth/me');
+      
+      if (!isAuthCheck && currentPath !== '/login' && currentPath !== '/register') {
         // Handle unauthorized access
         localStorage.removeItem('user');
         window.location.href = '/login';
