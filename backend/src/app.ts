@@ -13,7 +13,7 @@ app.use(cookieParser()); // Parse cookies
 
 // CORS configuration with credentials support
 app.use(cors({
-    origin: envVars.CORS_ORIGIN,
+    origin: envVars.CORS_ORIGIN || 'https://smart-task-manager-client-three.vercel.app',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
