@@ -27,6 +27,7 @@ export const ActivityLog: React.FC = () => {
     try {
       setLoading(true);
       const response = await activityLogService.getActivityLogs(filters);
+      console.log(response.data);
       setLogs(response.data.logs);
     } catch (error: any) {
       message.error('Failed to load activity logs');

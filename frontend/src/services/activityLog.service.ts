@@ -46,11 +46,12 @@ const transformActivityLogs = (logs: any[]): ActivityLog[] => {
 class ActivityLogService {
   async getActivityLogs(params?: GetActivityLogsParams) {
     const response = await api.get<{ logs: any[]; total: number }>('/activity-log', { params });
+    console.log(response)
     return {
       ...response,
       data: {
-        logs: transformActivityLogs(response.data.logs),
-        total: response.data.total,
+        logs: transformActivityLogs(response.data.data.logs),
+        total: response.data.data?.count,
       },
     };
   }

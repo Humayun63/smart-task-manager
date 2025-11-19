@@ -126,19 +126,19 @@ export const TeamLoadCard: React.FC<TeamLoadCardProps> = ({
           </div>
         )
       }
+      loading={loading}
     >
-      {teamMembers.length === 0 ? (
+      {!loading && (teamMembers.length === 0 ? (
         <Empty description="No team members found" />
       ) : (
         <Table
           columns={columns}
           dataSource={teamMembers}
           rowKey="memberId"
-          loading={loading}
           pagination={false}
           size="middle"
         />
-      )}
+      ))}
     </Card>
   );
 };
