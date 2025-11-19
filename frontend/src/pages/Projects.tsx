@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
-import { projectService } from '../services';
+import { projectService, activityLogService } from '../services';
 import type { Project } from '../types';
 import { CreateProjectModal, EditProjectModal } from '../components/projects';
 import { formatDistanceToNow } from 'date-fns';
@@ -58,6 +58,15 @@ export const Projects: React.FC = () => {
     try {
       setDeleteLoading(true);
       await projectService.deleteProject(projectToDelete.id);
+      
+      // Log activity
+      await activityLogService.createActivityLog({
+        message: `Project "${projectToDelete.name}" was deleted`,
+        entity: 'project',
+        entityId: projectToDelete.id,
+        team: projectToDelete.team.id,
+      });
+      
       message.success('Project deleted successfully');
       setDeleteModalVisible(false);
       setProjectToDelete(null);

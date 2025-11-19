@@ -111,12 +111,11 @@ export const EditProjectModal: React.FC<EditProjectModalProps> = ({
           name="description"
           label="Description"
           rules={[
-            { required: true, message: 'Please enter project description' },
-            { min: 10, message: 'Description must be at least 10 characters' },
+            { required: false },
           ]}
         >
           <TextArea
-            placeholder="Enter project description"
+            placeholder="Enter project description (optional)"
             rows={4}
             size="large"
           />

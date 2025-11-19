@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, InputNumber, Button, message } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
-import { teamService } from '../../services';
+import { teamService, activityLogService } from '../../services';
 
 interface AddMemberModalProps {
   visible: boolean;
@@ -26,6 +26,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       
       // Backend expects an array of members
       await teamService.addMembers(teamId, { members: [values] });
+      
+      // Log activity
+      await activityLogService.createActivityLog({
+        message: `Member "${values.name}" was added to the team`,
+        entity: 'team',
+        entityId: teamId,
+        team: teamId,
+      });
       
       message.success('Member added successfully');
       form.resetFields();

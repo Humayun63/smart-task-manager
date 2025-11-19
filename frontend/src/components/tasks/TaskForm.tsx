@@ -6,7 +6,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { taskService, projectService, teamService } from '../../services';
+import { taskService, projectService, teamService, activityLogService } from '../../services';
 import type { Project, TeamMember, CreateTaskData, UpdateTaskData, Task } from '../../types';
 
 const { TextArea } = Input;
@@ -15,9 +15,10 @@ interface TaskFormProps {
   task?: Task | null;
   mode: 'create' | 'edit';
   preSelectedProjectId?: string;
+  onSuccess?: () => void;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProjectId }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProjectId, onSuccess }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
 
   useEffect(() => {
     fetchProjects();
+    
     if (task && mode === 'edit') {
       form.setFieldsValue({
         title: task.title,
@@ -63,7 +65,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
   const loadProjectTeam = async (projectId: string) => {
     try {
       setMembersLoading(true);
-      const project = projects.find((p) => p.id === projectId);
+      let project = projects.find((p) => p.id === projectId);
+      
+      // If project not in list yet, fetch it directly
+      if (!project) {
+        const projectResponse = await projectService.getProject(projectId);
+        project = projectResponse.data.project;
+      }
+      
       if (!project) return;
 
       setSelectedProject(project);
@@ -151,9 +160,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
           project: values.project,
           assignedMember: values.assignedMember,
         };
-        await taskService.createTask(createData);
+        const response = await taskService.createTask(createData);
+        
+        // Log activity
+        await activityLogService.createActivityLog({
+          message: `Task "${values.title}" was created`,
+          entity: 'task',
+          entityId: response.data.task.id,
+          project: values.project,
+          task: response.data.task.id,
+          team: selectedProject?.team.id,
+        });
+        
         message.success('Task created successfully');
-        navigate('/tasks');
+        
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/tasks');
+        }
       } else if (task) {
         const updateData: UpdateTaskData = {
           title: values.title,
@@ -163,8 +188,29 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
           assignedMember: values.assignedMember,
         };
         await taskService.updateTask(task.id, updateData);
+        
+        // Log activity
+        let logMessage = `Task "${values.title}" was updated`;
+        if (task.status !== values.status) {
+          logMessage = `Task "${values.title}" status changed from ${task.status} to ${values.status}`;
+        }
+        
+        await activityLogService.createActivityLog({
+          message: logMessage,
+          entity: 'task',
+          entityId: task.id,
+          project: task.project.id,
+          task: task.id,
+          team: task.team.id,
+        });
+        
         message.success('Task updated successfully');
-        navigate('/tasks');
+        
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/tasks');
+        }
       }
     } catch (error: any) {
       if (error.errorFields) return;
@@ -216,11 +262,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, mode, preSelectedProje
             name="description"
             label="Description"
             rules={[
-              { required: true, message: 'Please enter task description' },
-              { min: 10, message: 'Description must be at least 10 characters' },
+              { required: false },
             ]}
           >
-            <TextArea placeholder="Enter task description" rows={4} size="large" />
+            <TextArea placeholder="Enter task description (optional)" rows={4} size="large" />
           </Form.Item>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -19,13 +19,12 @@ import {
   MoreOutlined,
   ExclamationCircleOutlined,
   SearchOutlined,
-  FilterOutlined,
   ProjectOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
-import { taskService, projectService, teamService } from '../services';
+import { taskService, projectService, teamService, activityLogService } from '../services';
 import type { Task, Project, TeamMember, TaskPriority, TaskStatus } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -135,6 +134,16 @@ export const Tasks: React.FC = () => {
     try {
       setDeleteLoading(true);
       await taskService.deleteTask(taskToDelete.id);
+      
+      // Log activity
+      await activityLogService.createActivityLog({
+        message: `Task "${taskToDelete.title}" was deleted`,
+        entity: 'task',
+        entityId: taskToDelete.id,
+        project: taskToDelete.project.id,
+        team: taskToDelete.team.id,
+      });
+      
       message.success('Task deleted successfully');
       setDeleteModalVisible(false);
       setTaskToDelete(null);
@@ -310,7 +319,8 @@ export const Tasks: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <Card>
+      <div>
+        <Card>
         <Space direction="vertical" size="middle" className="w-full">
           <Search
             placeholder="Search tasks..."
@@ -376,6 +386,7 @@ export const Tasks: React.FC = () => {
           </Space>
         </Space>
       </Card>
+      </div>
 
       {/* Task List */}
       <div className="overflow-x-auto">

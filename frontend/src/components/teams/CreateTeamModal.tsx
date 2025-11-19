@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, message } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
-import { teamService } from '../../services';
+import { teamService, activityLogService } from '../../services';
 
 interface CreateTeamModalProps {
   visible: boolean;
@@ -22,6 +22,15 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
       const values = await form.validateFields();
       setLoading(true);
       const response = await teamService.createTeam(values);
+      
+      // Log activity
+      await activityLogService.createActivityLog({
+        message: `Team "${values.name}" was created`,
+        entity: 'team',
+        entityId: response.data.team.id,
+        team: response.data.team.id,
+      });
+      
       message.success('Team created successfully');
       form.resetFields();
       onClose();

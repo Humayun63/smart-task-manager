@@ -14,23 +14,28 @@ const transformActivityLog = (log: any): ActivityLog => {
   return {
     ...log,
     id: log._id || log.id,
-    project: log.project ? {
-      id: log.project._id || log.project.id,
-      name: log.project.name,
+    project: log.projectId ? {
+      id: log.projectId._id || log.projectId.id,
+      name: log.projectId.name,
     } : null,
-    task: log.task ? {
-      id: log.task._id || log.task.id,
-      title: log.task.title,
+    task: log.taskId ? {
+      id: log.taskId._id || log.taskId.id,
+      title: log.taskId.title,
     } : null,
-    team: log.team ? {
-      id: log.team._id || log.team.id,
-      name: log.team.name,
+    team: log.teamId ? {
+      id: log.teamId._id || log.teamId.id,
+      name: log.teamId.name,
     } : null,
     createdBy: {
       id: log.createdBy._id || log.createdBy.id,
       name: log.createdBy.name,
       email: log.createdBy.email,
     },
+    createdAt: log.timestamp || log.createdAt,
+    updatedAt: log.timestamp || log.updatedAt,
+    message: log.message,
+    entity: log.entity || 'unknown',
+    entityId: log.entityId || log._id,
   };
 };
 
@@ -58,7 +63,15 @@ class ActivityLogService {
     task?: string;
     team?: string;
   }) {
-    const response = await api.post<{ log: any }>('/activity-log', data);
+    // Map frontend field names to backend field names
+    const backendData = {
+      message: data.message,
+      projectId: data.project,
+      taskId: data.task,
+      teamId: data.team,
+    };
+    
+    const response = await api.post<{ log: any }>('/activity-log', backendData);
     return {
       ...response,
       data: {

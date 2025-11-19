@@ -29,6 +29,7 @@ import {
 import { projectService, taskService } from '../services';
 import type { Project, Task } from '../types';
 import { EditProjectModal } from '../components/projects';
+import { CreateTaskModal } from '../components/tasks';
 import { formatDistanceToNow } from 'date-fns';
 
 const { Title, Paragraph } = Typography;
@@ -40,6 +41,7 @@ export const ProjectDetail: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [createTaskModalVisible, setCreateTaskModalVisible] = useState(false);
 
   const fetchProjectDetails = async () => {
     if (!projectId) return;
@@ -113,10 +115,10 @@ export const ProjectDetail: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Button
-              type="default"
+              type="primary"
               icon={<PlusOutlined />}
               size="large"
-              onClick={() => navigate('/tasks/create', { state: { projectId: project.id } })}
+              onClick={() => setCreateTaskModalVisible(true)}
               className="flex-1 sm:flex-initial"
             >
               Add Task
@@ -131,7 +133,7 @@ export const ProjectDetail: React.FC = () => {
               Kanban Board
             </Button>
             <Button
-              type="primary"
+              type="default"
               icon={<EditOutlined />}
               size="large"
               onClick={() => setEditModalVisible(true)}
@@ -144,7 +146,8 @@ export const ProjectDetail: React.FC = () => {
       </div>
 
       {/* Project Info */}
-      <Card title="Project Information" className="shadow-sm">
+      <div>
+        <Card title="Project Information" className="shadow-sm">
         <Descriptions column={{ xs: 1, sm: 2, md: 3 }} bordered>
           <Descriptions.Item
             label={
@@ -183,9 +186,11 @@ export const ProjectDetail: React.FC = () => {
           </Descriptions.Item>
         </Descriptions>
       </Card>
+      </div>
 
       {/* Task Summary */}
-      <Card title="Task Summary" className="shadow-sm">
+      <div>
+        <Card title="Task Summary" className="shadow-sm">
         {tasks.length > 0 ? (
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={8}>
@@ -229,6 +234,7 @@ export const ProjectDetail: React.FC = () => {
           />
         )}
       </Card>
+      </div>
 
       {/* Task List */}
       {tasks.length > 0 && (
@@ -297,12 +303,21 @@ export const ProjectDetail: React.FC = () => {
       )}
 
       {projectId && (
-        <EditProjectModal
-          visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
-          onSuccess={fetchProjectDetails}
-          project={project}
-        />
+        <>
+          <EditProjectModal
+            visible={editModalVisible}
+            onClose={() => setEditModalVisible(false)}
+            onSuccess={fetchProjectDetails}
+            project={project}
+          />
+          
+          <CreateTaskModal
+            visible={createTaskModalVisible}
+            onClose={() => setCreateTaskModalVisible(false)}
+            onSuccess={fetchProjectDetails}
+            projectId={projectId}
+          />
+        </>
       )}
     </div>
   );

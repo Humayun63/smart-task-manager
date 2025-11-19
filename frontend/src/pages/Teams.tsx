@@ -3,7 +3,7 @@ import { Button, Table, Typography, message, Tag, Dropdown, Modal } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, TeamOutlined, MoreOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
-import { teamService } from '../services';
+import { teamService, activityLogService } from '../services';
 import type { Team } from '../types';
 import { CreateTeamModal, EditTeamModal } from '../components/teams';
 import { formatDistanceToNow } from 'date-fns';
@@ -49,6 +49,15 @@ console.log(teams)
         try {
             setDeleteLoading(true);
             await teamService.deleteTeam(teamToDelete.id);
+            
+            // Log activity
+            await activityLogService.createActivityLog({
+                message: `Team "${teamToDelete.name}" was deleted`,
+                entity: 'team',
+                entityId: teamToDelete.id,
+                team: teamToDelete.id,
+            });
+            
             message.success('Team deleted successfully');
             setDeleteModalVisible(false);
             setTeamToDelete(null);
@@ -70,8 +79,8 @@ console.log(teams)
         navigate(`/teams/${teamId}`);
     };
 
-    const handleTeamCreated = (teamId: string) => {
-        navigate(`/teams/${teamId}`);
+    const handleTeamCreated = () => {
+        fetchTeams();
     };
 
     const columns: ColumnsType<Team> = [
