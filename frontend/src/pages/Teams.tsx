@@ -88,10 +88,15 @@ console.log(teams)
             title: 'Team Name',
             dataIndex: 'name',
             key: 'name',
-            render: (name: string) => (
+            render: (name: string, record: Team) => (
                 <div className="flex items-center">
                     <TeamOutlined className="mr-2 text-primary" />
-                    <span className="font-medium">{name}</span>
+                    <span 
+                        className="font-medium cursor-pointer hover:text-primary hover:underline"
+                        onClick={() => handleView(record.id)}
+                    >
+                        {name}
+                    </span>
                 </div>
             ),
         },

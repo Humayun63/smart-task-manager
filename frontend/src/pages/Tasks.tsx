@@ -193,7 +193,12 @@ export const Tasks: React.FC = () => {
       key: 'title',
       render: (title: string, record: Task) => (
         <div>
-          <div className="font-medium">{title}</div>
+          <div 
+            className="font-medium cursor-pointer hover:text-primary hover:underline"
+            onClick={() => handleEdit(record.id)}
+          >
+            {title}
+          </div>
           <div className="text-sm text-text-muted mt-1 line-clamp-1">
             {record.description}
           </div>
@@ -206,10 +211,15 @@ export const Tasks: React.FC = () => {
       key: 'project',
       width: 150,
       responsive: ['md'] as any,
-      render: (projectName: string) => (
+      render: (projectName: string, record: Task) => (
         <div className="flex items-center">
           <ProjectOutlined className="mr-2 text-blue-500" />
-          <span className="text-sm">{projectName}</span>
+          <span 
+            className="text-sm cursor-pointer hover:text-primary hover:underline"
+            onClick={() => navigate(`/projects/${record.project.id}`)}
+          >
+            {projectName}
+          </span>
         </div>
       ),
     },

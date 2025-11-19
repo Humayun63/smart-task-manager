@@ -101,7 +101,12 @@ export const Projects: React.FC = () => {
         <div>
           <div className="flex items-center">
             <ProjectOutlined className="mr-2 text-primary" />
-            <span className="font-medium">{name}</span>
+            <span 
+              className="font-medium cursor-pointer hover:text-primary hover:underline"
+              onClick={() => handleView(record.id)}
+            >
+              {name}
+            </span>
           </div>
           <div className="text-sm text-text-muted mt-1 line-clamp-1">
             {record.description}
@@ -115,10 +120,15 @@ export const Projects: React.FC = () => {
       key: 'team',
       width: 200,
       responsive: ['md'] as any,
-      render: (teamName: string) => (
+      render: (teamName: string, record: Project) => (
         <div className="flex items-center">
           <TeamOutlined className="mr-2 text-blue-500" />
-          <span>{teamName}</span>
+          <span 
+            className="cursor-pointer hover:text-primary hover:underline"
+            onClick={() => navigate(`/teams/${record.team.id}`)}
+          >
+            {teamName}
+          </span>
         </div>
       ),
     },
