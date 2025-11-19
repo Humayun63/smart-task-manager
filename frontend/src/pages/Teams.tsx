@@ -3,7 +3,7 @@ import { Button, Table, Typography, message, Tag, Dropdown, Modal } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, TeamOutlined, MoreOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
-import { teamService, activityLogService } from '../services';
+import { teamService } from '../services';
 import type { Team } from '../types';
 import { CreateTeamModal, EditTeamModal } from '../components/teams';
 import { formatDistanceToNow } from 'date-fns';

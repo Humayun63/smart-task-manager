@@ -23,3 +23,5 @@ export interface ActivityLogFilters {
   taskId?: string;
   limit?: number;
 }
+
+ export * from './activityLog.types';
